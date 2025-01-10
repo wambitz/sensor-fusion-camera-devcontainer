@@ -16,7 +16,7 @@ void loadImage3()
         // create file name
         ostringstream imgNumber;                   // #include <sstream>
         imgNumber << setfill('0') << setw(4) << i; // #include <iomanip>
-        string filename = "../images/img" + imgNumber.str() + ".jpg";
+        string filename = "02-opencv-library/images/img" + imgNumber.str() + ".jpg";
 
         // load image and store it into a vector
         cv::Mat img;
@@ -29,8 +29,11 @@ void loadImage3()
     cv::namedWindow(windowName, 1); // create window
     for (auto it = imgList.begin(); it != imgList.end(); ++it)
     {
-
         // STUDENT TASK : Prevent image 7 from being displayed
+        if (it == imgList.begin() + 2)
+        {
+            continue;
+        }
 
         // display image
         cv::imshow(windowName, *it);
