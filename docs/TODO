@@ -1,0 +1,195 @@
+# CMakeLists.txt - Main
+cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
+
+project(sfnd-camera LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# NOTE!! For large projects:
+# ExternalProject_Add() is more scalable and flexible.
+# add_subdirectory() is simpler but better suited for small, tightly integrated libraries.
+# Most modern, large-scale projects prefer ExternalProject_Add() (or package managers like Conan or vcpkg)
+# for managing third-party libraries efficiently.
+
+# ----------------------------------------------------------
+# Option 1: Build OpenCV from source with add_subdirectory()
+# ----------------------------------------------------------
+# Add the OpenCV submodule as a subproject
+# This will build OpenCV from the checked-out source
+# add_subdirectory(third-party/opencv4.10)
+
+# Optionally, install OpenCV locally in a controlled path
+# install(TARGETS opencv_core opencv_imgcodecs opencv_highgui
+#         EXPORT OpenCVTargets
+#         RUNTIME DESTINATION ${THIRD_PARTY_INSTALL_DIR}/bin
+#         LIBRARY DESTINATION ${THIRD_PARTY_INSTALL_DIR}/lib
+#         ARCHIVE DESTINATION ${THIRD_PARTY_INSTALL_DIR}/lib
+# )
+# NOTE: Don't forget to run cmake --install for this be executed
+# NOTE: This will inherit the BUILD_TYPE configuration not like option 2
+
+# -------------------------------------------------------------
+# Option 2: Build OpenCV from source with ExternalProject_Add()
+# -------------------------------------------------------------
+
+# Set where the third-party libraries will be installed
+set(THIRD_PARTY_INSTALL_DIR ${CMAKE_SOURCE_DIR}/third-party/install)
+
+include(ExternalProject)
+
+# Add the OpenCV external project, pointing to the submodule source
+ExternalProject_Add(
+    opencv_external
+    PREFIX ${CMAKE_BINARY_DIR}/third-party/opencv4.10
+    SOURCE_DIR ${CMAKE_SOURCE_DIR}/third-party/opencv4.10
+    CMAKE_ARGS 
+        -DCMAKE_INSTALL_PREFIX=${THIRD_PARTY_INSTALL_DIR}/opencv4.10
+        # NOTE: If this is not configured then Release it's used by default and sub projects cannot be build in Debug Mode
+        -DCMAKE_CONFIGURATION_TYPES=Debug;Release
+        -DBUILD_SHARED_LIBS=ON
+        -DBUILD_TEST=OFF
+        -DBUILD_EXAMPLES=OFF
+        BUILD_COMMAND      ${CMAKE_COMMAND} --build . --config $<CONFIG>
+        INSTALL_COMMAND    ${CMAKE_COMMAND} --build . --target install --config $<CONFIG>
+)
+
+# Add a custom target to depend on OpenCV installation
+# This ensures we build the libraries before referencing them
+# add_custom_target(opencv_install DEPENDS opencv_external)
+
+# Find OpenCV only after the installation is done
+# set(OpenCV_DIR "${CMAKE_SOURCE_DIR}/third-party/install/opencv4.10/x64/vc17/lib")
+
+# Import OpenCV after the external project is built
+# find_package(OpenCV 4.10 REQUIRED PATHS ${OpenCV_DIR} NO_DEFAULT_PATH)
+
+# =========================
+# Subprojects
+# =========================
+
+# add_subdirectory(02-opencv-library)
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+
+cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
+project(sfnd-camera LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Include FetchContent to download external libraries
+include(FetchContent)
+
+# Set a path for third-party libraries
+set(THIRD_PARTY_INSTALL_DIR ${CMAKE_SOURCE_DIR}/third-party/install)
+
+# FetchContent for OpenCV
+FetchContent_Declare(
+    opencv_prebuilt
+    URL https://github.com/opencv/opencv/releases/download/4.5.0/opencv-4.5.0-vc14_vc15.zip
+    URL_HASH SHA256=fc43ef67f73e28db28e8a6d3c2293346b208efc32cf40bb663e6a5c780c0efc3
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+
+# Download and extract OpenCV
+FetchContent_MakeAvailable(opencv_prebuilt)
+
+# Set OpenCV_DIR to the extracted location
+set(OpenCV_DIR "${opencv_prebuilt_SOURCE_DIR}/build/x64/vc15/lib")
+
+# Find OpenCV
+find_package(OpenCV REQUIRED PATHS ${OpenCV_DIR} NO_DEFAULT_PATH)
+
+if(OpenCV_FOUND)
+    message(STATUS "OpenCV found: ${OpenCV_VERSION}")
+    message(STATUS "OpenCV include dir: ${OpenCV_INCLUDE_DIRS}")
+    message(STATUS "OpenCV libraries: ${OpenCV_LIBS}")
+else()
+    message(FATAL_ERROR "OpenCV not found. Check the FetchContent download.")
+endif()
+
+# Include OpenCV headers
+include_directories(${OpenCV_INCLUDE_DIRS})
+
+# =========================
+# Subprojects
+# =========================
+add_subdirectory(02-opencv-library)
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+# CMakeLists.txt - Main
+cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
+
+project(sfnd-camera LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# NOTE!! For large projects:
+# ExternalProject_Add() is more scalable and flexible.
+# add_subdirectory() is simpler but better suited for small, tightly integrated libraries.
+# Most modern, large-scale projects prefer ExternalProject_Add() (or package managers like Conan or vcpkg)
+# for managing third-party libraries efficiently.
+
+# ----------------------------------------------------------
+# Option 1: Build OpenCV from source with add_subdirectory()
+# ----------------------------------------------------------
+# Add the OpenCV submodule as a subproject
+# This will build OpenCV from the checked-out source
+# add_subdirectory(third-party/opencv4.10)
+
+# Optionally, install OpenCV locally in a controlled path
+# install(TARGETS opencv_core opencv_imgcodecs opencv_highgui
+#         EXPORT OpenCVTargets
+#         RUNTIME DESTINATION ${THIRD_PARTY_INSTALL_DIR}/bin
+#         LIBRARY DESTINATION ${THIRD_PARTY_INSTALL_DIR}/lib
+#         ARCHIVE DESTINATION ${THIRD_PARTY_INSTALL_DIR}/lib
+# )
+# NOTE: Don't forget to run cmake --install for this be executed
+# NOTE: This will inherit the BUILD_TYPE configuration not like option 2
+
+# -------------------------------------------------------------
+# Option 2: Build OpenCV from source with ExternalProject_Add()
+# -------------------------------------------------------------
+
+# Set where the third-party libraries will be installed
+set(THIRD_PARTY_INSTALL_DIR ${CMAKE_SOURCE_DIR}/third-party/install)
+
+include(ExternalProject)
+
+# Add the OpenCV external project, pointing to the submodule source
+ExternalProject_Add(
+    opencv_external
+    PREFIX ${CMAKE_BINARY_DIR}/third-party/opencv4.10
+    SOURCE_DIR ${CMAKE_SOURCE_DIR}/third-party/opencv4.10
+    CMAKE_ARGS 
+        -DCMAKE_INSTALL_PREFIX=${THIRD_PARTY_INSTALL_DIR}/opencv4.10
+        # NOTE: If this is not configured then Release it's used by default and sub projects cannot be build in Debug Mode
+        -DCMAKE_CONFIGURATION_TYPES=Debug;Release
+        -DBUILD_SHARED_LIBS=ON
+        -DBUILD_TEST=OFF
+        -DBUILD_EXAMPLES=OFF
+        BUILD_COMMAND      ${CMAKE_COMMAND} --build . --config Release
+        INSTALL_COMMAND    ${CMAKE_COMMAND} --build . --target install --config Release
+)
+
+# Add a custom target to depend on OpenCV installation
+# This ensures we build the libraries before referencing them
+# add_custom_target(opencv_install DEPENDS opencv_external)
+
+# Find OpenCV only after the installation is done
+# set(OpenCV_DIR "${CMAKE_SOURCE_DIR}/third-party/install/opencv4.10/x64/vc17/lib")
+
+# Import OpenCV after the external project is built
+# find_package(OpenCV 4.10 REQUIRED PATHS ${OpenCV_DIR} NO_DEFAULT_PATH)
+
+# =========================
+# Subprojects
+# =========================
+
+# add_subdirectory(02-opencv-library)
