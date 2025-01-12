@@ -93,4 +93,102 @@ git push --set-upstream origin <local_branch_name>
 ```
 
 * Next, create a PR and merge the new branch with the remote master.
-	
+
+## Install OpenCV globally
+
+### To build all the projects
+
+```bash
+cd ../../
+cmake -S . -B build
+cmake --build build --config Release
+cmake --build build --config Debug
+```
+
+- Set environment variables
+    - Binary
+    - OpenCV_DIR
+
+### To build specific projects in an isolated fashion (opencv needs to be available)
+
+```bash
+cd 01-playground
+cmake -S . -B build
+cmake --build build --config Release
+cmake --build build --config Debug
+```
+
+## Install OpenCV locally 
+
+Clone the submodule repository:
+
+```
+git submodule update --init --recursive
+```
+
+Build the library
+
+```bash
+cd third-party/opencv4.10
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=../third-party/install
+
+cmake --build build --config Release
+cmake --build build --config Debug
+cmake --build build --config Release --target INSTALL # this will install at DCMAKE_INSTALL_PREFIX if defined otherwise build/install
+cmake --build build --config Debug --target INSTALL 
+```
+
+### To build all the projects
+
+```bash
+cd ../../
+cmake -S . -B build
+cmake --build build --config Release
+cmake --build build --config Debug
+```
+
+### To build specific projects in an isolated fashion (opencv needs to be available)
+
+```bash
+cd 01-playground
+cmake -S . -B build
+cmake --build build --config Release
+cmake --build build --config Debug
+```
+
+To be able to run this should be added to your path. WARNING: This variable could already be set on the system / global environment variables, make sure to know where this is coming from and make sure to overwrite it if you want to use your custom installation.
+
+Powershell:
+
+```powershell
+$env:PATH = "${PWD}\third-party\opencv4.10\build\x64\vc17\bin;" + $env:PATH
+```
+
+CMD: 
+
+```cmd
+set "PATH=\Users\wambe\Workspace\Udacity\SensorFusion\03_Camera\sfnd-camera-devcontainer\01-playground\..\third-party\opencv4.10\build\x64\vc17\bin;%PATH%"
+```
+
+Bash:
+
+```bash
+PATH="/path/to/opencv/bin:$PATH" ./MyApp
+```
+
+
+## Building only one project:
+
+Mention that this needs to be defined for finding a custom build of OpenCV also it might be needed to add the binary dir to the PATH.
+
+Doing this on your local session should overwrite a global installation if any. If nothing is set find_package() will throw an error.
+
+```bash
+cmake -S . -B build -DOpenCV_DIR="../third-party/opencv4.10/build/install"
+```
+
+Or for more nested projects like <EXAMPLE_HERE>:
+
+```
+cmake -S . -B build -DOpenCV_DIR="../../third-party/opencv4.10/build/install"
+```
